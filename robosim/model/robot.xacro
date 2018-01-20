@@ -1,0 +1,342 @@
+<?xml version="1.0"?>
+<robot name="robosim"
+       xmlns:xacro="http://www.ros.org/wiki/xacro" >
+
+
+<!-- Para -->      
+<!-- Define constant parameter -->
+    <xacro:property name="PI" value="3.1416"/>
+    <xacro:property name="cL" value="0.44"  />  <!-- length of chassis -->
+	<xacro:property name="cW" value="0.39"  />  <!-- width of chassis -->
+	<xacro:property name="cH" value="0.18"  />  <!-- height of chassis -->
+	<xacro:property name="wR" value="0.1"   />  <!-- radius of wheel -->
+	<xacro:property name="wW" value="0.025" />  <!-- width of wheel -->
+		
+    
+<!-- Body -->
+    <!-- Base_Footprint (ground mark) -->
+        <link name="base_footprint">
+		    <visual>
+		        <origin xyz="0 0 0" rpy="0 0 0" />
+		        <geometry>
+		            <box size="0.001 0.001 0.001" />
+		        </geometry>
+		    </visual>
+
+		    <inertial>
+		        <mass value="0.0001" />
+		        <origin xyz="0 0 0" />
+		        <inertia ixx="0.0001" ixy="0.0" ixz="0.0" 
+		        		 iyy="0.0001" iyz="0.0" 
+		        		 izz="0.0001" />
+		    </inertial>
+        </link>
+
+        <joint name="base_footprint_joint" type="fixed">
+            <parent link="base_footprint" />
+            <child  link="base_link" />
+            <origin xyz="0 0 ${wR}" rpy="0 0 0" />
+        </joint>
+    
+    <!-- Base_Link (Action body/chassis of the robot) -->
+        <link name="base_link">
+            <visual>
+                <geometry>
+                    <box size="${cL} ${cW} ${cH}" />
+                </geometry>
+                <!-- set orgion at bottom of the base -->
+                <origin xyz="0 0 ${cH/2}" rpy="0 0 0" />
+                <material name="white">
+         			<color rgba="1 1 1 .5"/>
+         		</material>
+            </visual>
+            
+            <collision>
+			    <geometry>
+           			<box size="${cL} ${cW} ${cH}"/>
+         		</geometry>
+		    </collision>
+		
+		    <inertial>
+			    <mass value="10"/>
+			    <inertia ixx="1.0" ixy="0.0" ixz="0.0" 
+					     iyy="1.0" iyz="0.0" 
+					     izz="1.0"/>
+		    </inertial>
+        </link>
+        
+        <gazebo reference="base_link">
+            <material>Gazebo/Orange</material>
+        </gazebo>
+    
+    <!-- Desk leg attached to base -->
+        <link name="desk_leg_link">
+            <visual>
+                <geometry>
+                    <box size="0.1 0.1 0.8" />
+                </geometry>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <material name="white">
+         			<color rgba="1 1 1 .5"/>
+         		</material>
+            </visual>
+            
+            <collision>
+			    <geometry>
+                    <box size="0.1 0.1 0.8" />
+			    </geometry>
+		    </collision>
+		
+		    <inertial>
+		        <mass  value="0.0001" />
+		        <inertia ixx="0.0001" ixy="0.0" ixz="0.0" 
+		        		 iyy="0.0001" iyz="0.0" 
+		        		 izz="0.0001" />
+		    </inertial>
+        </link>
+        
+        <joint name="base_link_to_desk_leg_joint" type="fixed">
+            <parent link="base_link" />
+            <child  link="desk_leg_link" />
+            <origin xyz="0 0 ${cH+0.4}" rpy="0 0 0" />
+        </joint>
+        
+        <gazebo reference="desk_leg_link">
+            <material>Gazebo/White</material>
+        </gazebo>
+    
+    <!-- Desk-top on top of the leg -->
+        <link name="desk_top_link">
+            <visual>
+                <geometry>
+                    <box size="0.3 0.4 0.015" />
+                </geometry>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <material name="white">
+         			<color rgba="1 1 1 .5"/>
+         		</material>
+            </visual>
+            
+            <collision>
+			    <geometry>
+                    <box size="0.3 0.4 0.015" />
+			    </geometry>
+		    </collision>
+		
+		    <inertial>
+		        <mass  value="0.0001" />
+		        <inertia ixx="0.0001" ixy="0.0" ixz="0.0" 
+		        		 iyy="0.0001" iyz="0.0" 
+		        		 izz="0.0001" />
+		    </inertial>
+        </link>
+        
+        <joint name="desk_leg_to_top_joint" type="fixed">
+            <parent link="desk_leg_link" />
+            <child  link="desk_top_link" />
+            <origin xyz="0 0 0.4" rpy="0 0 0" />
+        </joint>
+        
+        <gazebo reference="desk_top_link">
+            <material>Gazebo/Orange</material>
+        </gazebo>
+
+    
+<!-- Wheels -->
+    <!-- Wheels attached to base  -->
+        <xacro:macro name="base_wheel" params="index mass negX negY">
+            <link name="wheel${index}_link">
+                <visual>
+                    <geometry>
+                        <cylinder length="${wW}" radius="${wR}" />
+                    </geometry>
+                    <origin xyz="0 0 0" rpy="0 0 0" />
+                    <material name="black">
+             			<color rgba="0 0 0 1"/>
+             		</material>
+                </visual>
+                
+                <collision>
+			        <geometry>
+                        <cylinder length="${wW}" radius="${wR}"/>
+			        </geometry>
+		        </collision>
+		
+		        <inertial>
+			        <mass value="${mass}"/>
+			        <inertia ixx="1" ixy="0.0" ixz="0.0" 
+		        		 	 iyy="1" iyz="0.0" 
+		        		 	 izz="1" />
+		        </inertial>
+            </link>
+            
+            <joint name="base_to_wheel${index}_joint" type="continuous">
+	            <parent link="base_link"/>
+                <child  link="wheel${index}_link"/>
+                <origin rpy="${-PI/2} 0 0" 
+                        xyz="${negX*(cL/2-wR)} ${negY*(cW/2+wW/2)} 0"/>
+                <axis xyz="0 0 1" />
+                <limit effort="100" velocity="1000" />
+	        </joint>
+	        
+	        <gazebo reference="wheel${index}_link">
+                <material>Gazebo/Black</material>
+            </gazebo>
+        </xacro:macro>
+    
+        <!-- Add robot wheels -->
+        <xacro:base_wheel index="1" mass="0.1" negX=" 1" negY=" 1" />
+        <xacro:base_wheel index="2" mass="0.1" negX=" 1" negY="-1" />
+        <xacro:base_wheel index="3" mass="0.1" negX="-1" negY=" 1" />
+        <xacro:base_wheel index="4" mass="0.1" negX="-1" negY="-1" />
+
+    <!-- Caster wheel attached to base
+        <link name="caster_wheel_link">
+            <visual>
+                <geometry>
+                    <cylinder length="${2*wW}" radius="${wR/2}" />
+                </geometry>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <material name="black">
+             		<color rgba="0 0 0 1"/>
+                </material>
+            </visual>
+            
+            <collision>
+			    <geometry>
+                    <cylinder length="${2*wW}" radius="${wR/2}"/>
+			    </geometry>
+		    </collision>
+		
+		    <inertial>
+		        <mass  value="0.0001" />
+		        <inertia ixx="0.0001" ixy="0.0" ixz="0.0" 
+		        		 iyy="0.0001" iyz="0.0" 
+		        		 izz="0.0001" />
+		    </inertial>
+        </link>
+        
+        <joint name="base_link_to_caster_wheel_joint" type="fixed">
+            <parent link="base_link" />
+            <child  link="caster_wheel_link" />
+            <origin rpy="${-PI/2} 0 0"
+                    xyz="${-cL/2+wR/2-cL/2+wR} 0 ${-wR/2}" />
+        </joint>
+        
+        <gazebo reference="caster_wheel_link">
+            <material>Gazebo/Black</material>
+        </gazebo>
+    -->
+    
+    <!-- Add drive plugin -->
+	    <gazebo>
+		    <plugin name="skid_steer_drive_controller" 
+		            filename="libgazebo_ros_skid_steer_drive.so">
+			    <leftFrontJoint>base_to_wheel1_joint</leftFrontJoint>
+			    <rightFrontJoint>base_to_wheel2_joint</rightFrontJoint>
+			    <leftRearJoint>base_to_wheel3_joint</leftRearJoint>
+			    <rightRearJoint>base_to_wheel4_joint</rightRearJoint>
+			    <wheelSeparation>${cW+wW}</wheelSeparation>
+			    <wheelDiameter>${2*wR}</wheelDiameter>
+			    <broadcastTF>1</broadcastTF>
+			    <odometryFrame>odom</odometryFrame>
+			    <robotBaseFrame>base_footprint</robotBaseFrame>
+			    <commandTopic>cmd_vel</commandTopic>
+			    <robotNamespace>/robosim</robotNamespace>
+			    <odometryTopic>odom</odometryTopic>
+			    <updateRate>100.0</updateRate>
+			    <alwaysOn>true</alwaysOn>
+			    <torque>2</torque>
+			</plugin>
+			<!--			    
+            <plugin name="differential_drive_controller" 
+		            filename="libgazebo_ros_diff_drive.so">
+                <leftJoint>base_to_wheel1_joint</leftJoint>
+			    <rightJoint>base_to_wheel2_joint</rightJoint>
+			    <wheelSeparation>${cW+wW}</wheelSeparation>
+			    <wheelDiameter>${2*wR}</wheelDiameter>
+		        <publishWheelTF>false</publishWheelTF>
+		        <publishTf>1</publishTf>
+		        <broadcastTF>1</broadcastTF>
+		        <publishWheelJointState>false</publishWheelJointState>
+		        <wheelTorque>3</wheelTorque>
+		        <wheelAcceleration>1</wheelAcceleration>
+		        <rosDebugLevel>Debug</rosDebugLevel>
+			    <robotNamespace>/</robotNamespace>
+			    <odometryFrame>odom</odometryFrame>
+			    <robotBaseFrame>base_footprint</robotBaseFrame>
+			    <commandTopic>robosim/cmd_vel</commandTopic>
+			    <odometryTopic>robosim/odom</odometryTopic>
+			    <updateRate>100.0</updateRate>
+			    <alwaysOn>true</alwaysOn>
+		    </plugin>
+		    -->
+	    </gazebo>
+    
+    
+    
+<!-- Laser -->
+    <!-- Add laser sensor -->	
+	    <link name="laser_link">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <mesh filename="package://robosim/model/sick-lms1xx.dae"/>
+                </geometry>
+            </visual>
+            <collision>
+                <geometry>
+                    <box size="0.1 0.1 0.1"/>
+                </geometry>
+            </collision>
+            <inertial>
+                <mass value="1e-5"/>
+                <inertia ixx="1e-6" ixy="0.0" ixz="0.0" 
+                         iyy="1e-6" iyz="0.0" 
+                         izz="1e-6"/>
+            </inertial>
+        </link>
+        
+        <joint name="base_to_laser" type="fixed">
+            <parent link="base_link"/>
+            <child link="laser_link"/>
+            <origin rpy="0 0 0" xyz="${cL/2-wR-0.015} 0 ${cH+0.33}"/>
+        </joint>
+
+        <!-- laser plugin -->
+        <gazebo reference="laser_link">
+            <sensor type="ray" name="laser_sensor">
+                <pose>0 0 0 0 0 0</pose>
+                <visualize>true</visualize>
+                <update_rate>40</update_rate>
+                <ray>
+                    <scan>
+                        <horizontal>
+                            <samples>720</samples>
+                            <resolution>1</resolution>
+                            <min_angle>${-3*PI/4}</min_angle>
+                            <max_angle>${3*PI/4}</max_angle>
+                        </horizontal>
+                    </scan>
+                    <range>
+                        <min>0.10</min>
+                        <max>30.0</max>
+                        <resolution>0.01</resolution>
+                    </range>
+                    <noise>
+                        <type>gaussian</type>
+                        <mean>0.0</mean>
+                        <stddev>0.01</stddev>
+                    </noise>
+                </ray>
+                
+                <plugin name="laser_controller" 
+                        filename="libgazebo_ros_laser.so">
+                    <topicName>robosim/laser/scan</topicName>
+                	<frameName>laser_link</frameName>
+                </plugin>
+            </sensor>
+        </gazebo>
+
+    
+</robot>

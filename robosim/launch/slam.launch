@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!-- arguments passed to this launch file -->
+	<arg name="config" default="$(find robosim)/launch/slam.rviz"  />
+	
+	<!-- -->
+	<include file="$(find robosim)/launch/disp.launch" >
+		<arg name="config" value="$(arg config)" />
+		<arg name="gui"	   value="false"  />
+	</include>
+	
+	<!-- import world-->
+	<include file="$(find gazebo_ros)/launch/willowgarage_world.launch" >
+	</include>
+	
+	<!-- Run a python script to the send a service call to gazebo_ros to 
+	     spawn a URDF robot. -->
+	<node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" 
+		  respawn="false" output="screen"
+		  args="-urdf -model robot -param robot_description -z 0.05"/> 
+	
+	<!-- start teleop node -->	  
+	<node name="teleop" pkg="teleop_twist_keyboard" 
+		  type="teleop_twist_keyboard.py" launch-prefix="xterm -e" >
+		<remap from="cmd_vel" to="/robosim/cmd_vel" />
+	</node>
+	
+	<!-- start slam node --> 
+	<node name="slam_gmapping" pkg="gmapping" type="slam_gmapping">
+		<param name="base_frame" value="base_footprint"/>
+		<remap from="scan" to="/robosim/laser/scan"/>
+	</node>
+	
+</launch>

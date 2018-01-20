@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- arguments passed to this launch file --> 
+	<arg name="config" default="$(find roborun)/launch/slam.rviz" />
+	<arg name="lms_ip" default="192.168.7.7" />
+	<arg name="lms_id" default="laser_link" />
+	
+	<!-- start nodes related to base-->
+	<include file="$(find roborun)/launch/base.launch" >
+	    <arg name="config" value="$(arg config)" />
+	    <arg name="lms_ip" value="$(arg lms_ip)" />
+	    <arg name="lms_id" value="$(arg lms_id)" />
+	</include>
+	
+	<!-- start slam node --> 
+	<node name="slam_gmapping" pkg="gmapping" type="slam_gmapping">
+		<param name="base_frame" value="base_footprint"/>
+	</node>
+
+</launch>

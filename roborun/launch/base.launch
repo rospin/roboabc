@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- arguments passed to this launch file --> 
+	<arg name="config" default="$(find roborun)/launch/base.rviz" />
+	<arg name="lms_ip" default="192.168.7.7" />
+	<arg name="lms_id" default="laser_link" />
+	
+	<!-- start base driver node-->
+	<node name="base_driver" pkg="roborun" type="base_driver.py" >
+	    <param name="port"          value="/dev/ttyr00" />
+	    <param name="baud"          value="57600"  type="int" />
+	    <param name="rate"          value="10.0" type="double" />
+	    <param name="base_frame_id" value="base_footprint" />
+	    <param name="odom_frame_id" value="odom" />
+	</node>
+	
+	<!-- start laser driver node-->
+	<node name="sick_lms" pkg="lms1xx" type="LMS1xx_node" >
+	    <param name="host"     value="$(arg lms_ip)" />
+	    <param name="frame_id" value="$(arg lms_id)" />
+	</node>
+	
+	<!-- start laser tf brodcaster node
+	<node name="sick_lms_brodcaster" pkg="tf" 
+	      type="static_transform_publisher"
+	      args="0 0 0.6 0 0 0 base_footprint $(arg lms_id) 100" />
+	-->
+	
+	<!-- start rviz node-->      
+	<include file="$(find robosim)/launch/disp.launch" >
+		<arg name="config" value="$(arg config)" />
+		<arg name="gui"	   value="false" />
+	</include>
+
+</launch>
